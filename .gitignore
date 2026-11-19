@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# 自管理 JDK / 工具
+.tools/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Android
+captures/
+*.apk
+*.aab
+*.keystore
+doc/miniprogram/
