@@ -1,17 +1,24 @@
 package com.tep.timeswitch.ui.settings
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -33,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -80,7 +88,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // —— 主题 ——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("主题", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(4.dp))
@@ -91,7 +99,7 @@ fun SettingsScreen(
             }
 
             // —— 设备信息(自首页迁入)——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("设备信息", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(8.dp))
@@ -104,34 +112,45 @@ fun SettingsScreen(
                         val lt = deviceState.loopTimer.first()
                         InfoRow(
                             "循环定时",
-                            "%02d:%02d:%02d ~ %02d:%02d:%02d %s".format(
+                            "开启 %02d:%02d:%02d / 关闭 %02d:%02d:%02d".format(
                                 lt.startH, lt.startM, lt.startS,
                                 lt.endH, lt.endM, lt.endS,
-                                if (lt.event) "到点开" else "到点关",
                             ),
                         )
                     }
                 }
             }
 
-            // —— 日志(自首页迁入)——
-            Card {
+            // —— 日志(自首页迁入,固定高度滚动查看)——
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("日志", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(8.dp))
-                    frameLog.takeLast(60).forEach { line ->
-                        Text(
-                            text = line,
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        )
+                    val logScroll = rememberScrollState()
+                    Row(modifier = Modifier.height(200.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .verticalScroll(logScroll),
+                        ) {
+                            frameLog.takeLast(60).forEach { line ->
+                                Text(
+                                    text = line,
+                                    fontSize = 10.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                )
+                            }
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        ScrollbarIndicator(logScroll, Modifier.fillMaxHeight())
                     }
                 }
             }
 
             // —— 删除设备 ——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -149,7 +168,7 @@ fun SettingsScreen(
             }
 
             // —— APP 版本 ——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     InfoRow("APP 版本", versionName.ifEmpty { "—" })
                 }
@@ -187,6 +206,28 @@ private fun ThemeRadioRow(label: String, selected: Boolean, onClick: () -> Unit)
         RadioButton(selected = selected, onClick = onClick)
         Spacer(Modifier.width(4.dp))
         Text(label, fontSize = 15.sp)
+    }
+}
+
+/** 简易滚动条指示器(固定高度日志区用,拇指随滚动位置移动;内容不足一屏时隐藏)。 */
+@Composable
+private fun ScrollbarIndicator(state: ScrollState, modifier: Modifier = Modifier) {
+    if (state.maxValue <= 0) return
+    BoxWithConstraints(
+        modifier = modifier
+            .width(3.dp)
+            .clip(RoundedCornerShape(2.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        val thumbH = maxHeight * 0.25f
+        Box(
+            modifier = Modifier
+                .offset(y = (maxHeight - thumbH) * (state.value.toFloat() / state.maxValue))
+                .fillMaxWidth()
+                .height(thumbH)
+                .clip(RoundedCornerShape(2.dp))
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)),
+        )
     }
 }
 

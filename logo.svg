@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="智能五孔插座控制 App" xmlns:bx="https://boxy-svg.com">
+  <bx:title>智能五孔插座 · App Icon</bx:title>
+  <rect width="108" height="108" fill="#10B981"></rect>
+  <rect x="31" y="31" width="56" height="56" rx="13" fill="#0C8B61"></rect>
+  <rect x="26" y="26" width="56" height="56" rx="13" fill="#FFFFFF"></rect>
+  <g fill="#10B981" transform="translate(8.1 8.1) scale(0.85)">
+    <rect x="39.5" y="38.352" width="4" height="13.5" rx="2"></rect>
+    <rect x="52" y="38.352" width="4" height="13.5" rx="2"></rect>
+    <rect x="64.5" y="38.352" width="4" height="13.5" rx="2"></rect>
+    <rect x="39.5" y="60.25" width="4" height="13.5" rx="2" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, -32.868149, 48.968778)"></rect>
+    <rect x="64.5" y="60.25" width="4" height="13.5" rx="2" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 64.500619, -27.398759)"></rect>
+  </g>
+</svg>

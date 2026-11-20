@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -84,6 +85,7 @@ fun CountdownScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Button(
@@ -106,7 +108,7 @@ fun CountdownScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (countdown != null) {
-                Card {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         Text("当前倒计时", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                         Spacer(Modifier.height(6.dp))
@@ -122,7 +124,7 @@ fun CountdownScreen(
                 }
             }
 
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TimeField(label = "倒计时时长", hour = h, minute = m, second = s) { nh, nm, ns ->
                         h = nh; m = nm; s = ns
@@ -130,7 +132,7 @@ fun CountdownScreen(
                 }
             }
 
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("执行操作", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(4.dp))

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 旧版(API 24/25)兜底图标:满幅方图,不做圆角(交由桌面蒙版);自根目录 logo.svg 原样转换 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 背景 -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
+
+    <!-- 面板的纯色硬阴影 -->
+    <path
+        android:fillColor="#0C8B61"
+        android:pathData="M44,31 L74,31 A13,13 0 0 1 87,44 L87,74 A13,13 0 0 1 74,87 L44,87 A13,13 0 0 1 31,74 L31,44 A13,13 0 0 1 44,31 Z" />
+
+    <!-- 插座面板 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,26 L69,26 A13,13 0 0 1 82,39 L82,69 A13,13 0 0 1 69,82 L39,82 A13,13 0 0 1 26,69 L26,39 A13,13 0 0 1 39,26 Z" />
+
+    <!-- 五孔:translate(8.1,8.1) scale(0.85) -->
+    <group
+        android:pivotX="0"
+        android:pivotY="0"
+        android:scaleX="0.85"
+        android:scaleY="0.85"
+        android:translateX="8.1"
+        android:translateY="8.1">
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M41.5,38.352 A2,2 0 0 1 43.5,40.352 L43.5,49.852 A2,2 0 0 1 41.5,51.852 A2,2 0 0 1 39.5,49.852 L39.5,40.352 A2,2 0 0 1 41.5,38.352 Z" />
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M54,38.352 A2,2 0 0 1 56,40.352 L56,49.852 A2,2 0 0 1 54,51.852 A2,2 0 0 1 52,49.852 L52,40.352 A2,2 0 0 1 54,38.352 Z" />
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M66.5,38.352 A2,2 0 0 1 68.5,40.352 L68.5,49.852 A2,2 0 0 1 66.5,51.852 A2,2 0 0 1 64.5,49.852 L64.5,40.352 A2,2 0 0 1 66.5,38.352 Z" />
+        <group
+            android:pivotX="0"
+            android:pivotY="0"
+            android:rotation="-45"
+            android:translateX="-32.868149"
+            android:translateY="48.968778">
+            <path
+                android:fillColor="#10B981"
+                android:pathData="M41.5,60.25 A2,2 0 0 1 43.5,62.25 L43.5,71.75 A2,2 0 0 1 41.5,73.75 A2,2 0 0 1 39.5,71.75 L39.5,62.25 A2,2 0 0 1 41.5,60.25 Z" />
+        </group>
+        <group
+            android:pivotX="0"
+            android:pivotY="0"
+            android:rotation="45"
+            android:translateX="64.500619"
+            android:translateY="-27.398759">
+            <path
+                android:fillColor="#10B981"
+                android:pathData="M66.5,60.25 A2,2 0 0 1 68.5,62.25 L68.5,71.75 A2,2 0 0 1 66.5,73.75 A2,2 0 0 1 64.5,71.75 L64.5,62.25 A2,2 0 0 1 66.5,60.25 Z" />
+        </group>
+    </group>
+</vector>

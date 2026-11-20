@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,9 +40,9 @@ import com.tep.timeswitch.ui.components.TimeField
 import kotlinx.coroutines.flow.SharedFlow
 
 /**
- * 设置循环定时页(开发文档 §6.1):开始/结束时间 + 底部「保存」满格按钮。
- * 保存 → 3233 单组下发(AGENT P9,EVENT 恒发 00 与原厂一致)+ 自动 3007=04;
- * 每天在开始/结束时间点循环执行,随「循环定时」模式生效。
+ * 设置循环定时页(开发文档 §6.1):开启时长 + 关闭时长 + 底部「保存」满格按钮。
+ * 打开即以设备存储值初始化表单(无单独"当前值"展示);
+ * 保存 → 3233 单组下发(AGENT P9,EVENT 恒发 00 与原厂一致)+ 自动 3007=04。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,6 +83,7 @@ fun LoopTimerScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Button(
@@ -103,42 +105,25 @@ fun LoopTimerScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (current != null) {
-                Card {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("当前循环定时", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            "%02d:%02d:%02d ~ %02d:%02d:%02d".format(
-                                current.startH, current.startM, current.startS,
-                                current.endH, current.endM, current.endS,
-                            ),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        )
-                    }
-                }
-            }
-
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TimeField(
-                        label = "开始时间",
+                        label = "开启时长",
                         hour = sh, minute = sm, second = ss,
                     ) { h, m, s -> sh = h; sm = m; ss = s }
                     TimeField(
-                        label = "结束时间",
+                        label = "关闭时长",
                         hour = eh, minute = em, second = es,
                     ) { h, m, s -> eh = h; em = m; es = s }
                 }
             }
 
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("说明", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "每天按开始与结束时间循环执行,保存后自动切换到「循环定时」模式生效。",
+                        "开启时长与关闭时长循环交替通断,保存后自动切换到「循环定时」模式生效。",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )

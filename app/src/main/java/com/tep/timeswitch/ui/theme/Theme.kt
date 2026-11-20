@@ -7,17 +7,17 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// 参考小程序主色 #1e86e0(视觉后续统一调整)
-val BrandBlue = Color(0xFF1E86E0)
-val BrandBlueLight = Color(0xFFE3F0FB)
+// 品牌色 #10B981(App Logo 绿;2026-11-20 起替代原小程序蓝 #1e86e0)
+val BrandGreen = Color(0xFF10B981)
+val BrandGreenLight = Color(0xFFD1FAE5)
 val TextSecondary = Color(0xFF666666)
 val TextHint = Color(0xFF959595)
 
 private val LightColors = lightColorScheme(
-    primary = BrandBlue,
+    primary = BrandGreen,
     onPrimary = Color.White,
-    primaryContainer = BrandBlueLight,
-    onPrimaryContainer = BrandBlue,
+    primaryContainer = BrandGreenLight,
+    onPrimaryContainer = BrandGreen,
     secondary = Color(0xFF10C3A6),
     error = Color(0xFFF76260),
     background = Color.White,
@@ -25,7 +25,7 @@ private val LightColors = lightColorScheme(
     onSurface = Color(0xFF1A1A1A),
 )
 
-private val DarkColors = darkColorScheme(primary = Color(0xFF7EB6F0))
+private val DarkColors = darkColorScheme(primary = Color(0xFF6EE7B7))
 
 @Composable
 fun TEPTimeSwitchTheme(

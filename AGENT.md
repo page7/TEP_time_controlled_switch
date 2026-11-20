@@ -92,6 +92,17 @@
 - `11:33 [UI]` ui/theme/Theme.kt、state/AppSettingsStore.kt、MainViewModel.kt、MainActivity.kt — 浅色主题背景/表面改**纯白** #FFFFFF(原背景 #F6F6F6,用户需求);TEPTimeSwitchTheme 增 `darkTheme` 参数;新增 AppSettingsStore(SharedPreferences,同 LastDeviceStore 风格)持久化主题模式,MainActivity 按 ThemeMode(SYSTEM/LIGHT/DARK)接线。
 - `11:33 [UI]` ui/device/DeviceScreen.kt、ui/settings/SettingsScreen.kt、state/DeviceRepository.kt、MainViewModel.kt、MainActivity.kt — 首页细节调整(用户 6 点):①纯白背景(随主题) ②顶栏刷新改图标(Refresh),断开按钮移除,新增返回图标=断开并回添加设备页(`repo.leaveDevice()` 断开+清空设备状态) ③状态简化为色字:已连接=绿(#4CAF50)/未连接=灰、已开启=蓝(主色)/已关闭=灰 ④模式图标:常关=PowerOff、常开=Power、循环=Autorenew ⑤菜单新增「设置」入口 → SettingsScreen(主题明暗三选/设备信息/日志/删除设备/APP 版本;设备信息与日志自首页迁入;删除设备=确认弹窗后 LastDeviceStore.clear()+断开回扫描页,`repo.forgetDevice()`) ⑥新增 DevicePage.SETTINGS 路由与设置页(BackHandler 返回)。
 - `11:33 [文档]` doc/TEP时控开关-Android开发文档.md — §6.1 页面结构图同步(顶栏返回+刷新图标、状态色字、菜单加设置、设备信息/日志迁设置页、SettingsPage 块与全局备注)、§6.3 增「顶栏返回」「设置页」交互行。
+- `11:48 [UI]` ui/device/DeviceScreen.kt、ui/timer/TimerEditScreen.kt、ui/countdown/CountdownScreen.kt、ui/loop/LoopTimerScreen.kt、ui/settings/SettingsScreen.kt、ui/timer/TimerListScreen.kt — UI 规整(用户 4 点):①状态区去掉「已开启/已关闭」行,只留连接状态色字 ②状态大图标 96→120dp(字形 48→60dp),与顶部间距 8→24dp ③所有页面横向块(卡片/行)统一 `padding → fillMaxWidth` 显式铺满,不再靠内容撑开(含 TimerEdit 重复时间行改 SpaceBetween、到点动作胶囊 weight 等分) ④表单页保存按钮统一固定 Scaffold bottomBar(TimerEdit 的保存从滚动列移出),全部加 `navigationBarsPadding()` 避开手势条/设备边缘。
+- `11:48 [文档]` doc/TEP时控开关-Android开发文档.md — §6.1 图块同步(状态区仅连接色字、图标 120dp)。
+- `11:58 [UI]` ui/loop/LoopTimerScreen.kt、ui/settings/SettingsScreen.kt — 循环定时页文案修正:「开始时间/结束时间」→「开启时长/关闭时长」,说明文案改为"开启时长与关闭时长循环交替通断";删除「当前循环定时」展示卡片(表单初值即设备存储值,打开即所见即所存);设置页设备信息「循环定时」行同步为「开启 xx / 关闭 xx」格式(去掉到点开/关字样)。
+- `12:39 [UI]` res/drawable/ic_launcher_{background,foreground,monochrome}.xml、res/mipmap*/ic_launcher(.xml/_round.xml)、AndroidManifest.xml — 新增 App 启动图标(用户提供 SVG:绿底 #10B981 + 硬阴影 + 白面板五孔插座,SVG 原样转 Android VectorDrawable,含 translate(8.1,8.1)/scale(0.85) 组变换与两个 45° 斜孔);自适应图标(背景/前景/单色三层,mipmap-anydpi-v26)+ API 24/25 满幅方图矢量兜底 + Android 13 主题图标;Manifest 补 `android:icon`/`android:roundIcon`(原缺失,用系统默认图标)。
+- `12:39 [UI]` ui/theme/Theme.kt、ui/device/DeviceScreen.kt — 品牌主题色 `#1E86E0` → **`#10B981`**(与 Logo 一致,用户指定):BrandBlue→BrandGreen、primaryContainer→翡翠绿 50 #D1FAE5、深色主色→#6EE7B7;「已连接」状态绿 #4CAF50 → #10B981 统一色板。
+- `13:12 [UI]` logo.svg(根目录,用户提供修订版)、res/drawable/ic_launcher_foreground.xml、res/mipmap/ic_launcher(.xml/_round.xml) — 按新 logo 重建图标(**原样转换、中心图案不做放大补偿、插座占比不变**):阴影偏移 29→31、上排孔 y=36→38.352、下排斜孔 rotate() 改为 matrix() 变换(等价 rotate(±45°)+平移,按矩阵 e/f 逐值还原为 group rotation+translate);背景/单色层/自适应壳不变。
+- `13:12 [UI]` ui/device/DeviceScreen.kt、ui/settings/SettingsScreen.kt — 首页状态图标上下间距加大(顶 24→40dp、图标下 16→28dp);设置页日志卡改**固定高度 200dp 内部滚动**,右侧自绘滚动条指示器(ScrollScrollbarIndicator,拇指随滚动位置移动,内容不足一屏隐藏)。
+- `13:12 [文档]` doc/TEP时控开关-Android开发文档.md — §6.1 SettingsPage 块同步(日志固定高度滚动)。
+- `13:19 [UI]` res/drawable/ic_launcher_{foreground,monochrome}.xml — **修自适应图标占比**:根因=系统蒙版只显示 108 画布中央约 72dp,56dp 面板被放大到 78% 视觉占比(用户反馈"几乎占满");前景/单色层外层加 `scale(2/3)` 蒙版补偿组(72/108),蒙版内占比=原 SVG 的 52%(一半左右),图案不放大;旧版兜底图标(完整方图不裁切)不动,两端视觉一致。
+- `13:19 [UI]` ui/device/DeviceScreen.kt — 首页间距:状态图标距顶 40→60dp(增加 1/2)、图标↔已连接 28→12dp(缩小)、已连接↔工作模式/菜单区 =60dp(与顶部一致,底 padding 44+列表间距 16)。
+- `13:25 [构建]` app/build.gradle.kts、dist/TEP-time-switch-v1.0.0.apk — **v1.0.0 正式版发版**:release 构建(R8 混淆+资源收缩+lintVital 通过,1.03MB),签名暂用调试密钥(用户确认,正式发布密钥后续替换);versionName 1.0.0/versionCode 1;git 提交全部改动并打 tag `v1.0.0` push,GitHub Release(gh CLI)上传 APK;模拟器 KativaTest 冒烟验证 release 包。
 
 ## 6. 协议补充(说明书未覆盖,带源码证据)
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tep.timeswitch.TimerDraft
@@ -78,6 +80,24 @@ fun TimerEditScreen(
                 },
             )
         },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Button(
+                    onClick = { onSave(draft.copy(group = group)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                ) {
+                    Text("保存", fontSize = 16.sp)
+                }
+            }
+        },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -87,7 +107,7 @@ fun TimerEditScreen(
                 .padding(horizontal = 16.dp),
         ) {
             // —— 时间 ——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TimeField(
                         label = "开启时间",
@@ -105,7 +125,7 @@ fun TimerEditScreen(
             Spacer(Modifier.height(12.dp))
 
             // —— 到点动作(EVENT:开启时间点的动作,关闭时间点动作相反)——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("到点动作", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(10.dp))
@@ -115,9 +135,12 @@ fun TimerEditScreen(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     )
                     Spacer(Modifier.height(10.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        SelectChip("开启", group.event, onClick = { group = group.copy(event = true) })
-                        SelectChip("关闭", !group.event, onClick = { group = group.copy(event = false) })
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        SelectChip("开启", group.event, onClick = { group = group.copy(event = true) }, modifier = Modifier.weight(1f))
+                        SelectChip("关闭", !group.event, onClick = { group = group.copy(event = false) }, modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -125,11 +148,14 @@ fun TimerEditScreen(
             Spacer(Modifier.height(12.dp))
 
             // —— 重复时间(7 圆钮,多选)——
-            Card {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("重复时间", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Spacer(Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
                         dayOrder.forEachIndexed { i, bit ->
                             val on = group.weekStart and (1 shl bit) != 0
                             Box(
@@ -167,7 +193,7 @@ fun TimerEditScreen(
             // —— 启用开关(仅 BATCH 族,EN 字节生效)——
             if (family == ModelTable.Family.BATCH) {
                 Spacer(Modifier.height(12.dp))
-                Card {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -192,27 +218,23 @@ fun TimerEditScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-
-            Button(
-                onClick = { onSave(draft.copy(group = group)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-            ) {
-                Text("保存", fontSize = 16.sp)
-            }
-            Spacer(Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun SelectChip(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun SelectChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Text(
         text = label,
         fontSize = 14.sp,
+        textAlign = TextAlign.Center,
         color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(20.dp))
             .background(
                 if (selected) MaterialTheme.colorScheme.primary

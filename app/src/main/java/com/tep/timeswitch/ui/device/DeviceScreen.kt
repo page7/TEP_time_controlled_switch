@@ -57,8 +57,8 @@ import com.tep.timeswitch.ble.BleConnState
 import com.tep.timeswitch.state.DeviceState
 import kotlinx.coroutines.flow.SharedFlow
 
-/** 连接状态绿色(已连接)。 */
-private val ConnectGreen = Color(0xFF4CAF50)
+/** 连接状态绿色(已连接,与品牌绿一致)。 */
+private val ConnectGreen = Color(0xFF10B981)
 
 /**
  * 控制主页(开发文档 §6.1,2026-11-20 重布局):
@@ -116,20 +116,20 @@ fun DeviceScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 24.dp),
         ) {
-            // ② 状态区(不显示卡片背景,仅图标区着色;连接/开关状态色字)
+            // ② 状态区(不显示卡片背景,仅图标区着色;连接状态色字)
             item {
                 val on = deviceState.mainPower
                 val ready = connState is BleConnState.Ready
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .padding(top = 60.dp, bottom = 44.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(96.dp)
+                            .size(120.dp)
                             .clip(CircleShape)
                             .background(
                                 if (on) MaterialTheme.colorScheme.primary
@@ -141,21 +141,14 @@ fun DeviceScreen(
                             contentDescription = null,
                             tint = if (on) Color.White
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(60.dp),
                         )
                     }
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         text = if (ready) "已连接" else "未连接",
                         fontSize = 12.sp,
                         color = if (ready) ConnectGreen
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        text = if (on) "已开启" else "已关闭",
-                        fontSize = 12.sp,
-                        color = if (on) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     )
                 }
@@ -164,7 +157,9 @@ fun DeviceScreen(
             // ③ 工作模式(无标题,5 大按钮横排等分)
             item {
                 Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     val mode = deviceState.mode
@@ -178,7 +173,11 @@ fun DeviceScreen(
 
             // ④ 菜单列表(独立子页面入口)
             item {
-                Card(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Card(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                ) {
                     Column {
                         MenuRow(Icons.Outlined.EventNote, "设置分组定时") { onOpenPage(DevicePage.TIMERS) }
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
