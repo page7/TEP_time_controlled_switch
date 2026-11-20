@@ -33,17 +33,17 @@
 | JDK | `.tools/jdk-17`(Temurin 17,自管理) | 系统仅有 JDK 8/11,AGP 8.x 需 17;通过 `gradle.properties` 的 `org.gradle.java.home` 指定 |
 | Gradle | Wrapper 8.10.x(自动生成) | 首次构建自动下载发行版 |
 | AGP / Kotlin | 8.7.x / 2.0.x + Compose 插件 | compileSdk 35 / minSdk 24 / targetSdk 35 |
-| 真机 | 待用户提供 | BLE 必须真机验证 |
+| 真机 | ✅ 已提供(M1 验收通过) | BLE 功能验收进行中 |
 
 ## 4. 里程碑进度
 
 | 里程碑 | 内容 | 状态 | 验收 |
 |---|---|---|---|
 | M0 | 规划文档 + AGENT 日志 | ✅ 完成(2026-11-19) | 开发文档 v1.0 已评审 |
-| M1 | 工程骨架 + BLE 链路(扫描/连接/收发帧/握手) | 🚧 代码完成,待真机验收 | 真机扫描连接后日志可见 5012/3005 |
-| M2 | 主控(开关/模式/状态渲染/断线重连) | ⬜ | 继电器可控、自动重连 |
-| M3 | 定时组三族下发 | ⬜ | 设备到点动作正确 |
-| M4 | 倒计时 + 收尾 | ⬜ | 功能清单全勾 |
+| M1 | 工程骨架 + BLE 链路(扫描/连接/收发帧/握手) | ✅ 完成(2026-11-19) | 真机验收通过:用户确认可发现并连接设备 |
+| M2 | 主控(开关/模式/状态渲染/断线重连) | 🚧 代码完成,待真机验收 | 继电器可控、自动重连 |
+| M3 | 定时组三族下发 | 🚧 代码完成,待真机验收 | 设备到点动作正确 |
+| M4 | 倒计时 + 收尾 | 🚧 代码完成,待真机验收 | 功能清单全勾 |
 
 ## 5. 变更日志
 
@@ -70,6 +70,21 @@
 - `12:00 [验证]` 全量构建 — `testDebugUnitTest` 41/41 通过;`assembleDebug` BUILD SUCCESSFUL(35 tasks)。M1 代码完成,待真机验收。
 - `12:30 [验证]` 模拟器验收(KativaTest AVD,Android 16/API 36) — APK 安装/启动成功;权限弹窗(BLUETOOTH_SCAN/CONNECT)正常弹出并授权;扫描页 UI 正确(标题「时控开关」/按钮「扫描设备」/空态「发现设备」);点击扫描→按钮切换「停止扫描」、状态「正在搜索附近的时控开关…」、logcat `scan started`;停止→回退初始态 `scan stopped`;全流程无崩溃无 ANR。⚠️ 模拟器虚拟蓝牙扫不到真实设备,设备列表为空属预期;「发现真实设备+连接+5012/3005」仍待真机验收。
 - `14:00 [协议]` AGENT.md §6 — 新增协议补充 P5(循环定时 3233 可经 3004/3005 读回,回传布局带源码证据)、P6(协议无读设备时间指令,60 个上报 case 枚举证实;设备 RTC 只写不读,App 靠每次连接 5001 对时保证准点)。调研结论见对话 2026-11-19「芯片时间记录」问答。
+- `15:00 [测试/验收]` AGENT.md — M1 真机验收通过(用户确认扫描可发现设备并连接成功),里程碑 M1 勾选;M2–M4 开发批量启动。
+- `15:10 [协议层]` protocol/CountdownCodec.kt — 新增倒计时 3232 编解码(M4):ARG = `01|0C|IDX|EN|SWID|00|HH MM SS|EVENT`,时分秒 ASCII=倒计时时长;向量取自说明书 §8.1 示例帧(cycle.js sendCountdown/socket.js case 3232 实证,详见 §6 P7)。
+- `15:10 [协议层]` protocol/TimerCommands.kt — 新增三族定时下发策略纯函数(M3):planWrite(GROUP 10 组/包、LEGACY 单包无秒、BATCH 1 组/包)/planDelete(BATCH EN=00 单组重发、其余整表重发+重排 IDX、删至空发 00)/planClear(BATCH 逐槽补 EN=00)/nextIndex(缺口扫描,BATCH 复用 en=false 槽位)——全部对应 §7.5 与 cycle.js 实证,便于单测。
+- `15:15 [协议层]` protocol/LoopTimerCodec.kt、StatusParser.kt — 3233 循环定时只读解码(P5 要求 M4+ 实现;按组 LEN 前移、EVENT 取组末字节,兼容 §8.2 的 19B 与 P5 的 20B 记载,详见 §6 P8);3005 解析新增 3232 倒计时/3233 循环定时条目。
+- `15:20 [UI]` state/DeviceState.kt、DeviceRepository.kt — 状态模型加 countdown(协议层模型)/loopTimer(只读)/timerSlotCount(BATCH 清空跨度);仓库重写:断线重连改指数退避 1/2/4/8/15s×5(§4.5,原固定 5s);定时三族下发+倒计时 3232(写后自动 3007=02/03,风险 #4 与 B9);所有写指令乐观回写+防抖 3004 校准(§3.3);connect 即按广播 productId 定族(风险 #11);保存成功/失败消息流。
+- `15:25 [UI]` state/LastDeviceStore.kt、MainViewModel.kt、MainActivity.kt — A10 记住上次设备(SharedPreferences 最小实现,未引 DataStore 以保持最小依赖)并启动自动重连;ViewModel 增定时草稿(TimerDraft)/新增默认值(B13:周一~五 08:00→09:00 到点开)/上限校验「最大支持 N 组定时」/删除/清空/倒计时动作;MainActivity 增 TimerEdit 路由,权限与开蓝牙后 autoConnectLast。
+- `15:30 [UI]` ui/device/DeviceScreen.kt、ui/timer/TimerEditScreen.kt、ui/components/ValuePickers.kt — 控制页重写为开发文档 §6.1 全区块:①主控(电源+一键全关+模式胶囊 0–4)②功能列表(添加定时/设置倒计时滚动定位)③定时组区(卡片=插座图标随通断着色+时间段+「定时N」+星期摘要+删除,点卡片=编辑,清空入口)④倒计时区(时分秒+执行操作开/关+保存)⑤设备信息(含循环定时只读行)⑥通信日志;删除/清空确认弹窗、Snackbar 提示;定时编辑页(开启/关闭时间、到点动作、重复时间 7 圆钮显示序日→六、BATCH 启用开关、保存返回);时间选择器改点段弹列表(原滚轮的 Android 简化)。
+- `15:35 [测试]` test/…/CountdownCodecTest.kt、TimerCommandsTest.kt、StatusParserTest.kt — 新增 32 用例:3232 §8.1 示例帧向量/回环/ASCII 时间/截断容错,三族下发计划(10 组分包/单组包/EN=00 删除占位/清空/缺口选槽),3233 19B 与 20B 变体解析;合计 70/70 通过。
+- `15:40 [验证]` 全量构建 — `testDebugUnitTest` 70/70 通过;`assembleDebug` BUILD SUCCESSFUL。M2/M3/M4 代码完成,待真机验收(继电器动作/定时到点/倒计时/断线重连)。
+- `15:45 [文档]` AGENT.md、doc/TEP时控开关-Android开发文档.md — §6 新增 P7(3232 同构实证+§8.1 示例标注勘误)、P8(3233 组长 19/20B 两说与兼容策略);开发文档附录 A 功能清单 A1–A11 全部置「代码完成,待真机验收」;技术选型持久化行更正为 SharedPreferences(实测选择,保持最小依赖)。
+
+### 2026-11-20
+
+- `08:00 [UI]` ui/device/DeviceScreen.kt、MainViewModel.kt、MainActivity.kt — 主控区改为**纯状态展示**:大电源按钮去点击(仅随通断着色)、移除「一键全关」按钮及 onPower/onAllOff 链路(VM `setPower/allOff` 删除,DeviceRepository `setChannelPower/setAllPower` 协议封装保留备用),补「状态显示,由工作模式与定时控制」提示(用户反馈:手动开关在自动模式下被定时自纠覆盖、「一键全关」对单通道机型与大开关关断重复,均无实际用途;回归小程序开关图标区纯展示设计)。
+- `08:00 [文档]` doc/TEP时控开关-Android开发文档.md — §1.1 主控范围、§6.1 页面结构、§6.2 对应关系、§6.3 交互规则、M2 小节备注、附录 A5 状态同步本次调整。
 
 ## 6. 协议补充(说明书未覆盖,带源码证据)
 
@@ -81,3 +96,5 @@
 | P4 | BATCH 族删除=置 EN=00 后单组重发(开发文档 B2) | `cycle.js deleteTimer2` | M3 实现 |
 | P5 | **循环定时可读回**:3233 是 3005 条目之一(§9.2),回传布局 = `[LEN][IDX][EN][SWID][保留] sH sM sS [00] eH eM eS [00] [EVENT]`,与下发格式一致(时分秒 ASCII) | `app-service.js recvDataDeal case "3233"`(三处实现一致:s_hour 取 `slice(11,12)+slice(13,14)` 低半字节对) | 循环定时/倒计时/定时组均可 3004 读回;解析在 M4+ 实现(协议层已预留) |
 | P6 | **无「读设备当前时间」指令**:枚举 recvDataDeal 全部 60 个设备→主机 case(0001…5021)+ 协议 §6.2,无任何读时钟指令;5001 只写;UI 显示的时间是手机本地时钟(`updateClock` 用 `new Date()`)。5021 是 FTM007 配网状态,与时间无关 | `app-service.js recvDataDeal` 全 case 枚举;`updateClock:function` | 设备 RTC 时间不可读回;App 每次连接发 5001 对时即可保证准点;RTC 走时精度只能用「设近期定时观察是否准时动作」间接验证 |
+| P7 | **3232 倒计时下发与回传同构**:ARG = `01 \| 0C \| IDX EN SWID 00 \| HH MM SS \| EVENT`,HH/MM/SS 为倒计时「时/分:秒」时长的 ASCII 两位数;说明书 §8.1 示例文字「10 分 30 秒」与其 hex(`3130 3330 3030` = 10:30:00)不符,以 hex 为准(示例标注笔误) | `cycle.js sendCountdown`(`"00010000"+HH+MM+SS+EVENT`,`r=len/2+1`)、`socket.js case "3232"`(hour 取低半字节对,同 3005 回传布局) | M4 编解码按 hex 向量实现(CountdownCodec),单测断言 §8.1 示例帧 |
+| P8 | **3233 单组长度两说**:§8.2 布局 19B(EVENT=组末字节)与 P5 记载 20B(尾部 `[00][EVENT]`)并存;小程序发送恒 19B 且尾字节(=EVENT 位)恒发 `00`,读回解析取 `slice(36,38)`(=19B 末字节) | `cycle.js sendLoopTimer`("00010000"+sHsMsS+"00"+eHeMeS+"00")、`socket.js case "3233"`(event=slice(36,38)) | App 解码按组 LEN 前移、EVENT 取组末字节,两布局兼容(LoopTimerCodec);待真机读回实测定稿;循环定时编辑 M5+ 再定发送格式 |

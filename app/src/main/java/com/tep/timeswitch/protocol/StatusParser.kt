@@ -23,6 +23,8 @@ object StatusParser {
         val sunriseMode: Int? = null,
         val timers: List<TimerGroup>? = null,
         val timerFamily: ModelTable.Family? = null,    // 以收到的定时条目 TYPE 为准
+        val countdown: List<CountdownCodec.Countdown>? = null,   // 3232,null=未出现
+        val loopTimer: List<LoopTimerCodec.LoopTimer>? = null,   // 3233(P5),null=未出现
     )
 
     /**
@@ -45,6 +47,8 @@ object StatusParser {
         var sunriseMode: Int? = null
         var timers: List<TimerGroup>? = null
         var timerFamily: ModelTable.Family? = null
+        var countdown: List<CountdownCodec.Countdown>? = null
+        var loopTimer: List<LoopTimerCodec.LoopTimer>? = null
 
         for (unused in 0 until count) {
             if (pos + 3 > arg.size) break                 // 截断:停止整包(§9.3)
@@ -98,7 +102,13 @@ object StatusParser {
                     timers = TimerCodec.decode(value, withSeconds = true)
                     timerFamily = ModelTable.Family.BATCH
                 }
-                // 3232/3233/3235/3281/3282/3172/3261:M4+ 解析
+
+                Commands.StatusType.COUNTDOWN ->           // 3232 倒计时详情(§8.1 同构)
+                    countdown = CountdownCodec.decode(value)
+
+                Commands.StatusType.LOOP_TIMER ->          // 3233 循环定时详情(P5,只读)
+                    loopTimer = LoopTimerCodec.decode(value)
+                // 3235/3281/3282/3172/3261:M5+ 解析
             }
             pos += itemLen
         }
@@ -106,6 +116,7 @@ object StatusParser {
         return Status(
             channelCount, channelPower?.toMap(), allPower, mode,
             outputState, childLock, powerState, sunriseMode, timers, timerFamily,
+            countdown, loopTimer,
         )
     }
 

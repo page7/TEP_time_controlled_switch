@@ -96,4 +96,57 @@ class StatusParserTest {
         assertEquals(14, arg.size)
         assertEquals("20261118221000", String(arg, Charsets.US_ASCII))
     }
+
+    // ---------------- 3232 倒计时 / 3233 循环定时(P5) ----------------
+
+    @Test
+    fun `parse 3005 countdown entry`() {
+        // VALUE 与下发载荷同构:01 0c 00 01 00 00 3130 3330 3030 00(10:30:00 后关)
+        val value = Hex.bytesToHex(CountdownCodec.encode(10, 30, 0, event = false))
+        val item = Hex.u8(1 + 2 + value.length / 2) + "3232" + value
+        val arg = Hex.hexToBytes("01" + item)
+        val s = StatusParser.parse(arg)
+        assertEquals(1, s.countdown!!.size)
+        val c = s.countdown!![0]
+        assertEquals(10, c.h)
+        assertEquals(30, c.m)
+        assertEquals(0, c.s)
+        assertEquals(false, c.event)
+    }
+
+    @Test
+    fun `parse 3005 countdown zero count is present but empty`() {
+        val item = Hex.u8(1 + 2 + 1) + "3232" + "00"
+        val arg = Hex.hexToBytes("01" + item)
+        val s = StatusParser.parse(arg)
+        assertEquals(emptyList<CountdownCodec.Countdown>(), s.countdown)   // 出现且为 0 组 → 清空
+    }
+
+    @Test
+    fun `parse 3005 loop timer entry 19 bytes`() {
+        // §8.2:01 13 00 01 00 00 3038 3030 3030 00 3138 3030 3030 01(每天 08:00:00→18:00:00)
+        val value = "01" + "13" + "000100003038303030300031383030303001"
+        val item = Hex.u8(1 + 2 + value.length / 2) + "3233" + value
+        val arg = Hex.hexToBytes("01" + item)
+        val s = StatusParser.parse(arg)
+        assertEquals(1, s.loopTimer!!.size)
+        val lt = s.loopTimer!![0]
+        assertEquals(8, lt.startH)
+        assertEquals(0, lt.startM)
+        assertEquals(18, lt.endH)
+        assertEquals(true, lt.event)
+    }
+
+    @Test
+    fun `parse 3005 loop timer tolerates 20 bytes variant`() {
+        // P5 记载尾部 [00][EVENT] 的 20B 变体:EVENT 取组末字节,两种布局均兼容
+        val value = "01" + "14" + "00010000303830303030003138303030300000"
+        val item = Hex.u8(1 + 2 + value.length / 2) + "3233" + value
+        val arg = Hex.hexToBytes("01" + item)
+        val s = StatusParser.parse(arg)
+        assertEquals(1, s.loopTimer!!.size)
+        assertEquals(8, s.loopTimer!![0].startH)
+        assertEquals(18, s.loopTimer!![0].endH)
+        assertEquals(false, s.loopTimer!![0].event)   // 组末字节 = 00
+    }
 }

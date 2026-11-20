@@ -18,10 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tep.timeswitch.ui.device.DeviceScreen
 import com.tep.timeswitch.ui.scan.ScanScreen
 import com.tep.timeswitch.ui.theme.TEPTimeSwitchTheme
+import com.tep.timeswitch.ui.timer.TimerEditScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -30,12 +30,18 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grants ->
-        if (grants.values.all { it }) ensureBluetoothEnabled()
+        if (grants.values.all { it }) {
+            ensureBluetoothEnabled()
+            vm.autoConnectLast()                 // A10:启动自动重连上次设备
+        }
     }
 
     private val enableBtLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { /* 用户拒绝开蓝牙也允许进入,扫描时再提示 */ }
+    ) {
+        // 用户开蓝牙后尝试自动重连上次设备(拒绝也允许进入,扫描时再提示)
+        if (hasBlePermissions()) vm.autoConnectLast()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,9 +58,17 @@ class MainActivity : ComponentActivity() {
                     val scanning by vm.scanning.collectAsStateWithLifecycle()
                     val devices by vm.devices.collectAsStateWithLifecycle()
                     val frameLog by vm.frameLog.collectAsStateWithLifecycle()
+                    val editing by vm.editing.collectAsStateWithLifecycle()
 
-                    if (deviceState.device == null) {
-                        ScanScreen(
+                    val draft = editing
+                    when {
+                        draft != null -> TimerEditScreen(
+                            draft = draft,
+                            family = deviceState.family,
+                            onSave = { vm.saveTimer(it) },
+                            onBack = { vm.cancelEdit() },
+                        )
+                        deviceState.device == null -> ScanScreen(
                             scanning = scanning,
                             devices = devices,
                             onScanClick = {
@@ -63,22 +77,29 @@ class MainActivity : ComponentActivity() {
                             },
                             onDeviceClick = { vm.connect(it) },
                         )
-                    } else {
-                        DeviceScreen(
+                        else -> DeviceScreen(
                             connState = connState,
                             deviceState = deviceState,
                             frameLog = frameLog,
-                            onPower = { vm.setPower(it) },
+                            messages = vm.messages,
                             onMode = { vm.setMode(it) },
                             onRefresh = { vm.refresh() },
                             onDisconnect = { vm.disconnect() },
+                            onAddTimer = { vm.addTimer() },
+                            onEditTimer = { vm.editTimer(it) },
+                            onDeleteTimer = { vm.deleteTimer(it) },
+                            onClearTimers = { vm.clearTimers() },
+                            onSaveCountdown = { h, m, s, e -> vm.saveCountdown(h, m, s, e) },
                         )
                     }
                 }
             }
         }
 
-        if (hasBlePermissions()) ensureBluetoothEnabled() else requestBlePermissions()
+        if (hasBlePermissions()) {
+            ensureBluetoothEnabled()
+            vm.autoConnectLast()
+        } else requestBlePermissions()
     }
 
     override fun onDestroy() {

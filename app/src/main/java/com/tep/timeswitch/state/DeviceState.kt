@@ -1,6 +1,8 @@
 package com.tep.timeswitch.state
 
 import com.tep.timeswitch.ble.ScannedDevice
+import com.tep.timeswitch.protocol.CountdownCodec
+import com.tep.timeswitch.protocol.LoopTimerCodec
 import com.tep.timeswitch.protocol.ModelTable
 import com.tep.timeswitch.protocol.TimerCodec
 
@@ -21,13 +23,10 @@ data class DeviceState(
     val powerState: Boolean = false,
 
     val timers: List<TimerCodec.TimerGroup> = emptyList(),
-    val countdown: Countdown? = null,
+    val timerSlotCount: Int = 0,                 // 设备定时槽位跨度(max(index)+1 与列表长度取大),BATCH 清空用
+    val countdown: CountdownCodec.Countdown? = null,
+    val loopTimer: List<LoopTimerCodec.LoopTimer> = emptyList(),   // 只读(P5),编辑 M5+
 ) {
-    data class Countdown(
-        val h: Int, val m: Int, val s: Int,
-        val event: Boolean,       // true=到点开 false=到点关
-    )
-
     /** 单通道机型快捷取值。 */
     val mainPower: Boolean get() = power[0] ?: outputState
 }
