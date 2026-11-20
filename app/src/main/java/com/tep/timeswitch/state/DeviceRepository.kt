@@ -109,6 +109,19 @@ class DeviceRepository(
         connection.close()
     }
 
+    /** 离开当前设备:断开连接并清空设备状态(返回添加设备页用)。 */
+    fun leaveDevice() {
+        disconnect()
+        _state.update { DeviceState() }
+    }
+
+    /** 删除设备(设置页):清除记住的设备,断开并清空状态。 */
+    fun forgetDevice() {
+        leaveDevice()
+        store.clear()
+        emitMessage("设备已删除")
+    }
+
     private fun onConnState(s: BleConnState) {
         when (s) {
             is BleConnState.Ready -> {

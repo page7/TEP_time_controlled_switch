@@ -9,8 +9,10 @@ import com.tep.timeswitch.protocol.ModelTable
 import com.tep.timeswitch.protocol.TimerCommands
 import com.tep.timeswitch.protocol.TimerCodec
 import com.tep.timeswitch.protocol.TimerCodec.TimerGroup
+import com.tep.timeswitch.state.AppSettingsStore
 import com.tep.timeswitch.state.DeviceRepository
 import com.tep.timeswitch.state.DeviceState
+import com.tep.timeswitch.state.ThemeMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,11 +29,15 @@ data class TimerDraft(
 }
 
 /** 控制页二级页面(状态路由,BackHandler 返回首页)。 */
-enum class DevicePage { HOME, TIMERS, COUNTDOWN, LOOP }
+enum class DevicePage { HOME, TIMERS, COUNTDOWN, LOOP, SETTINGS }
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DeviceRepository(app, viewModelScope)
+    private val settings = AppSettingsStore(app)
+
+    /** 主题模式(设置页「主题」,持久化)。 */
+    val themeMode: StateFlow<ThemeMode> = settings.themeMode
 
     val devices: StateFlow<List<ScannedDevice>> = repo.scanner.devices
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -56,6 +62,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun backHome() {
         _page.value = DevicePage.HOME
+    }
+
+    // ---------------- 设置 ----------------
+
+    fun setThemeMode(mode: ThemeMode) = settings.setThemeMode(mode)
+
+    /** 返回添加设备页(断开当前连接并清除设备状态)。 */
+    fun backToScan() {
+        repo.leaveDevice()
+    }
+
+    /** 删除设备:清除记住的设备并断开回扫描页。 */
+    fun forgetDevice() {
+        repo.forgetDevice()
     }
 
     // ---------------- 扫描 / 连接 ----------------

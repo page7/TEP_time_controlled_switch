@@ -12,17 +12,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tep.timeswitch.state.ThemeMode
 import com.tep.timeswitch.ui.countdown.CountdownScreen
 import com.tep.timeswitch.ui.device.DeviceScreen
 import com.tep.timeswitch.ui.loop.LoopTimerScreen
 import com.tep.timeswitch.ui.scan.ScanScreen
+import com.tep.timeswitch.ui.settings.SettingsScreen
 import com.tep.timeswitch.ui.theme.TEPTimeSwitchTheme
 import com.tep.timeswitch.ui.timer.TimerEditScreen
 import com.tep.timeswitch.ui.timer.TimerListScreen
@@ -52,7 +56,13 @@ class MainActivity : ComponentActivity() {
         vm = MainViewModel(application)
 
         setContent {
-            TEPTimeSwitchTheme {
+            TEPTimeSwitchTheme(
+                darkTheme = when (vm.themeMode.collectAsStateWithLifecycle().value) {
+                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                },
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
@@ -64,6 +74,10 @@ class MainActivity : ComponentActivity() {
                     val frameLog by vm.frameLog.collectAsStateWithLifecycle()
                     val editing by vm.editing.collectAsStateWithLifecycle()
                     val page by vm.page.collectAsStateWithLifecycle()
+                    val versionName = remember {
+                        runCatching { packageManager.getPackageInfo(packageName, 0).versionName }
+                            .getOrNull() ?: ""
+                    }
 
                     val draft = editing
                     when {
@@ -88,11 +102,10 @@ class MainActivity : ComponentActivity() {
                                 DevicePage.HOME -> DeviceScreen(
                                     connState = connState,
                                     deviceState = deviceState,
-                                    frameLog = frameLog,
                                     messages = vm.messages,
                                     onMode = { vm.setMode(it) },
                                     onRefresh = { vm.refresh() },
-                                    onDisconnect = { vm.disconnect() },
+                                    onBackToScan = { vm.backToScan() },
                                     onOpenPage = { vm.openPage(it) },
                                 )
                                 DevicePage.TIMERS -> TimerListScreen(
@@ -116,6 +129,15 @@ class MainActivity : ComponentActivity() {
                                     onSave = { sh, sm, ss, eh, em, es ->
                                         vm.saveLoopTimer(sh, sm, ss, eh, em, es)
                                     },
+                                    onBack = { vm.backHome() },
+                                )
+                                DevicePage.SETTINGS -> SettingsScreen(
+                                    deviceState = deviceState,
+                                    frameLog = frameLog,
+                                    themeMode = vm.themeMode.collectAsStateWithLifecycle().value,
+                                    onThemeModeChange = { vm.setThemeMode(it) },
+                                    versionName = versionName,
+                                    onDeleteDevice = { vm.forgetDevice() },
                                     onBack = { vm.backHome() },
                                 )
                             }

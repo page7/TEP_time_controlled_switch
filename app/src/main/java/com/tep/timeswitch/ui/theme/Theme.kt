@@ -20,7 +20,7 @@ private val LightColors = lightColorScheme(
     onPrimaryContainer = BrandBlue,
     secondary = Color(0xFF10C3A6),
     error = Color(0xFFF76260),
-    background = Color(0xFFF6F6F6),
+    background = Color.White,
     surface = Color.White,
     onSurface = Color(0xFF1A1A1A),
 )
@@ -28,9 +28,12 @@ private val LightColors = lightColorScheme(
 private val DarkColors = darkColorScheme(primary = Color(0xFF7EB6F0))
 
 @Composable
-fun TEPTimeSwitchTheme(content: @Composable () -> Unit) {
+fun TEPTimeSwitchTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
     MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
         content = content,
     )
 }

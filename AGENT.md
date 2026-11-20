@@ -89,6 +89,9 @@
 - `09:40 [协议层]` protocol/LoopTimerCodec.kt、test/…/LoopTimerCodecTest.kt — 新增 3233 循环定时下发编码 `encode`(单组,LEN=19 含自身,EVENT 默认恒发 00 与原厂 sendLoopTimer 一致,AGENT P9);新增 6 用例:§8.2 布局帧向量/LEN 字节/ASCII 时间偏移/编解码回环/EVENT 恒 00(帧编解码必须有单测的规范要求)。
 - `09:40 [UI]` state/DeviceRepository.kt、MainViewModel.kt、MainActivity.kt、ui/device/DeviceScreen.kt、ui/timer/TimerListScreen.kt、ui/countdown/CountdownScreen.kt、ui/loop/LoopTimerScreen.kt — **首页重布局 + 功能子页面化**(用户 6 点需求):①顶栏仅「时控开关+识别码」+ 刷新/断开 ②状态区去卡片底色,仅电源图标圆形着色,下方小字连接状态/开关状态 ③工作模式去标题,5 大按钮横排等分(图标占位,用户后续替换) ④三菜单(设置分组定时/设置倒计时/设置循环定时)进独立子页面 ⑤子页面保存按钮底部满格,表单/列表按 MD 规范(RadioButton 单选行/56dp 菜单行/底部操作栏/顶部返回) ⑥首页整体 MD 规范化(设备信息/通信日志保留首页底部,未在需求内,待用户确认);DevicePage 状态路由 + BackHandler 系统返回;TimerListScreen(定时列表:增删改清空+底部「添加定时」)、CountdownScreen(3232+3007=03)、LoopTimerScreen(3233+3007=04,新能力);`saveLoopTimer` 仓库方法(乐观回写+3004 校准)。
 - `09:40 [文档]` doc/TEP时控开关-Android开发文档.md — §5.2 指令封装补 `setLoopTimer` 行、§6.1 页面结构图重绘(首页 + 三个子页面)、§6.2 对应关系/§6.3 交互规则同步、附录 A 新增 A12(循环定时下发)/A13(页面重布局)。
+- `11:33 [UI]` ui/theme/Theme.kt、state/AppSettingsStore.kt、MainViewModel.kt、MainActivity.kt — 浅色主题背景/表面改**纯白** #FFFFFF(原背景 #F6F6F6,用户需求);TEPTimeSwitchTheme 增 `darkTheme` 参数;新增 AppSettingsStore(SharedPreferences,同 LastDeviceStore 风格)持久化主题模式,MainActivity 按 ThemeMode(SYSTEM/LIGHT/DARK)接线。
+- `11:33 [UI]` ui/device/DeviceScreen.kt、ui/settings/SettingsScreen.kt、state/DeviceRepository.kt、MainViewModel.kt、MainActivity.kt — 首页细节调整(用户 6 点):①纯白背景(随主题) ②顶栏刷新改图标(Refresh),断开按钮移除,新增返回图标=断开并回添加设备页(`repo.leaveDevice()` 断开+清空设备状态) ③状态简化为色字:已连接=绿(#4CAF50)/未连接=灰、已开启=蓝(主色)/已关闭=灰 ④模式图标:常关=PowerOff、常开=Power、循环=Autorenew ⑤菜单新增「设置」入口 → SettingsScreen(主题明暗三选/设备信息/日志/删除设备/APP 版本;设备信息与日志自首页迁入;删除设备=确认弹窗后 LastDeviceStore.clear()+断开回扫描页,`repo.forgetDevice()`) ⑥新增 DevicePage.SETTINGS 路由与设置页(BackHandler 返回)。
+- `11:33 [文档]` doc/TEP时控开关-Android开发文档.md — §6.1 页面结构图同步(顶栏返回+刷新图标、状态色字、菜单加设置、设备信息/日志迁设置页、SettingsPage 块与全局备注)、§6.3 增「顶栏返回」「设置页」交互行。
 
 ## 6. 协议补充(说明书未覆盖,带源码证据)
 
