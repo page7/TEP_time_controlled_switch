@@ -102,7 +102,8 @@
 - `13:12 [文档]` doc/TEP时控开关-Android开发文档.md — §6.1 SettingsPage 块同步(日志固定高度滚动)。
 - `13:19 [UI]` res/drawable/ic_launcher_{foreground,monochrome}.xml — **修自适应图标占比**:根因=系统蒙版只显示 108 画布中央约 72dp,56dp 面板被放大到 78% 视觉占比(用户反馈"几乎占满");前景/单色层外层加 `scale(2/3)` 蒙版补偿组(72/108),蒙版内占比=原 SVG 的 52%(一半左右),图案不放大;旧版兜底图标(完整方图不裁切)不动,两端视觉一致。
 - `13:19 [UI]` ui/device/DeviceScreen.kt — 首页间距:状态图标距顶 40→60dp(增加 1/2)、图标↔已连接 28→12dp(缩小)、已连接↔工作模式/菜单区 =60dp(与顶部一致,底 padding 44+列表间距 16)。
-- `13:25 [构建]` app/build.gradle.kts、dist/TEP-time-switch-v1.0.0.apk — **v1.0.0 正式版发版**:release 构建(R8 混淆+资源收缩+lintVital 通过,1.03MB),签名暂用调试密钥(用户确认,正式发布密钥后续替换);versionName 1.0.0/versionCode 1;git 提交全部改动并打 tag `v1.0.0` push,GitHub Release(gh CLI)上传 APK;模拟器 KativaTest 冒烟验证 release 包。
+- `13:25 [构建]` app/build.gradle.kts、dist/TEP-time-switch-v1.0.0.apk — **v1.0.0 正式版发版**:release 构建(R8 混淆+资源收缩+lintVital 通过,1.03MB),签名暂用调试密钥(用户确认,正式发布密钥后续替换);versionName 1.0.0/versionCode 1;git 提交全部改动并打 tag `v1.0.0` push,GitHub Release(gh CLI)上传 APK;模拟器 KativaTest 冒烟验证 release 包(启动正常无崩溃)。
+- `13:48 [构建]` GitHub Release — v1.0.0 发布完成:https://github.com/page7/TEP_time_controlled_switch/releases/tag/v1.0.0 (gh CLI v2.105.0,经本地 HTTP 代理 127.0.0.1:11082,设备码授权 page7;APK 资产 TEP-time-switch-v1.0.0.apk)。
 
 ## 6. 协议补充(说明书未覆盖,带源码证据)
 
