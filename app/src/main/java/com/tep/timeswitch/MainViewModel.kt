@@ -26,6 +26,9 @@ data class TimerDraft(
     val isNew: Boolean get() = listIndex < 0
 }
 
+/** 控制页二级页面(状态路由,BackHandler 返回首页)。 */
+enum class DevicePage { HOME, TIMERS, COUNTDOWN, LOOP }
+
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DeviceRepository(app, viewModelScope)
@@ -42,6 +45,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** 非空 = 正在编辑定时(显示 TimerEditScreen)。 */
     private val _editing = MutableStateFlow<TimerDraft?>(null)
     val editing: StateFlow<TimerDraft?> = _editing
+
+    /** 控制页当前二级页面(HOME = 首页)。 */
+    private val _page = MutableStateFlow(DevicePage.HOME)
+    val page: StateFlow<DevicePage> = _page
+
+    fun openPage(p: DevicePage) {
+        _page.value = p
+    }
+
+    fun backHome() {
+        _page.value = DevicePage.HOME
+    }
 
     // ---------------- 扫描 / 连接 ----------------
 
@@ -135,6 +150,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun saveCountdown(h: Int, m: Int, s: Int, event: Boolean) = viewModelScope.launch {
         runCatching { repo.saveCountdown(h, m, s, event) }
             .onFailure { emit("倒计时下发失败:${it.message}") }
+    }
+
+    /** 下发循环定时(3233)+ 自动 3007=04。 */
+    fun saveLoopTimer(sh: Int, sm: Int, ss: Int, eh: Int, em: Int, es: Int) = viewModelScope.launch {
+        runCatching { repo.saveLoopTimer(sh, sm, ss, eh, em, es) }
+            .onFailure { emit("循环定时下发失败:${it.message}") }
     }
 
     // ---------------- 其他 ----------------

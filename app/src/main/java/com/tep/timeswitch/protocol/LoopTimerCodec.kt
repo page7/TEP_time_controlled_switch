@@ -12,7 +12,11 @@ import com.tep.timeswitch.protocol.Hex
  * P5 记载回传存在尾部 `[00] [EVENT]` 的 20B 变体;解码按组 LEN 字节前移、EVENT 取组末字节,
  * 两种布局均兼容(时间字段偏移 5–10 / 12–17 在两种布局下一致)。
  *
- * V1 仅读回展示(3004/3005);下发/编辑属 M5+(循环定时编辑不在 V1 范围)。
+ * 下发(AGENT 协议补充 P9):与 3232 同构,单组单发:
+ * ```
+ * 01(组数) | 13(LEN=19 含自身) | IDX | EN | SWID | 00 | sH sM sS | 00 | eH eM eS | EVENT
+ * ```
+ * EVENT 恒发 00(原厂 cycle.js sendLoopTimer 尾字节恒 00,语义待真机验证)。
  */
 object LoopTimerCodec {
 
@@ -27,6 +31,37 @@ object LoopTimerCodec {
         val endH: Int, val endM: Int, val endS: Int,
         val event: Boolean,             // true=时段起点开(到终点关)
     )
+
+    /**
+     * 组包 3233 下发载荷(不含帧头/CMD/LEN,即 ARG;单组,与 3232 同构,P9)。
+     * 时间为每天的时刻(HH:MM:SS ASCII 两位);EVENT 默认 00(原厂实证恒发 00)。
+     */
+    fun encode(
+        startH: Int, startM: Int, startS: Int,
+        endH: Int, endM: Int, endS: Int,
+        event: Boolean = false,
+        switchId: Int = 0,
+        index: Int = 0,
+    ): ByteArray {
+        require(startH in 0..23 && endH in 0..23)
+        require(startM in 0..59 && startS in 0..59 && endM in 0..59 && endS in 0..59)
+        val out = ArrayList<Byte>(20)
+        out.add(0x01)                                   // 组数恒 1
+        out.add(GROUP_LEN.toByte())                     // LEN=0x13 含自身
+        out.add(index.toByte())                         // IDX
+        out.add(0x01)                                   // EN
+        out.add(switchId.toByte())                      // SWID
+        out.add(0x00)                                   // 保留
+        out.addAll(Hex.ascii2(startH).toList())
+        out.addAll(Hex.ascii2(startM).toList())
+        out.addAll(Hex.ascii2(startS).toList())
+        out.add(0x00)                                   // s/e 间分隔
+        out.addAll(Hex.ascii2(endH).toList())
+        out.addAll(Hex.ascii2(endM).toList())
+        out.addAll(Hex.ascii2(endS).toList())
+        out.add(if (event) 1 else 0)                    // EVENT(组末字节)
+        return out.toByteArray()
+    }
 
     /**
      * 解码 3005 中 TYPE=3233 条目的 VALUE(以组数字节开头)。

@@ -11,6 +11,7 @@ import com.tep.timeswitch.protocol.Commands
 import com.tep.timeswitch.protocol.CountdownCodec
 import com.tep.timeswitch.protocol.Frame
 import com.tep.timeswitch.protocol.Hex
+import com.tep.timeswitch.protocol.LoopTimerCodec
 import com.tep.timeswitch.protocol.ModelTable
 import com.tep.timeswitch.protocol.StatusParser
 import com.tep.timeswitch.protocol.TimerCommands
@@ -355,6 +356,35 @@ class DeviceRepository(
             )
         }
         emitMessage("倒计时已下发")
+        calibrate()
+    }
+
+    // ---------------- 循环定时 ----------------
+
+    /**
+     * 下发循环定时(3233 单组,P9)+ 自动 3007=04(与保存定时→02/倒计时→03 同约定)。
+     * EVENT 恒发 00(原厂 cycle.js sendLoopTimer 实证,语义待真机验证)。
+     */
+    suspend fun saveLoopTimer(
+        startH: Int, startM: Int, startS: Int,
+        endH: Int, endM: Int, endS: Int,
+    ) {
+        sendCmd(Commands.LOOP_TIMER, LoopTimerCodec.encode(startH, startM, startS, endH, endM, endS))
+        setMode(Commands.Mode.LOOP)
+        _state.update {
+            it.copy(
+                loopTimer = listOf(
+                    LoopTimerCodec.LoopTimer(
+                        0, true, 0,
+                        startH, startM, startS,
+                        endH, endM, endS,
+                        event = false,
+                    ),
+                ),
+                mode = Commands.Mode.LOOP,
+            )
+        }
+        emitMessage("循环定时已下发")
         calibrate()
     }
 
